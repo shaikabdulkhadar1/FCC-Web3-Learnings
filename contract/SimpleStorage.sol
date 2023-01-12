@@ -23,7 +23,8 @@ contract SimpleStorage {
 
     //functions are execute a subset of code when called
     //here we are writing a function to store value of favoriteNumber
-    function store(uint256 _favoriteNumber) public {
+    //PS- we are writing virtual because we are overriding it
+    function store(uint256 _favoriteNumber) public virtual{
         favoriteNumber = _favoriteNumber;
     }
 
