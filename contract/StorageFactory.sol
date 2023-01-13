@@ -9,6 +9,7 @@ contract StorageFactory {
     SimpleStorage[] public simpleStorageArray;
 
     function createSimpleStorageContract() public {
+        //deploying a contract in another contract using new keyword
         SimpleStorage simpleStorage = new SimpleStorage();
         simpleStorageArray.push(simpleStorage);
     }
