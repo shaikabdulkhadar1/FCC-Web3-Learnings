@@ -3,39 +3,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./PriceConverter.sol";
 
 contract FundMe {
 
+    using PriceConverter for uint256;
+
     uint256 public minUSD = 50*1e18;
+
+    address[] public funders;
+    mapping(address => uint256) public addressToAmoundFunded;
 
     //using this we will get funds from other users.
     function fund() public payable {
 
         //require(msg.value >= 1e18, "send 1 ETH Minimum"); //1e18 == 1*10**18 = 10000000000000000 = 1 ETH
             //Reverting - Undo any action before and send remaining gas back
-        
-        require(getConversionRate(msg.value) >= minUSD, "send 1 ETH Minimum");
+
+        // require(getConversionRate(msg.value) >= minUSD, "send 1 ETH Minimum");
+        require(msg.value.getConversionRate() >= minUSD, "send 1 ETH Minimum");
+        funders.push(msg.sender);
+        addressToAmoundFunded[msg.sender] = msg.value;
     }
 
-    //it will get the price of ETH in USD
-    function getPrice() public view returns(uint256) {
-        //ABI - 
-        //Address - 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e);
-        (, int256 price,,,) = priceFeed.latestRoundData(); //price of ETH in USD
-        return uint256(price*1e10);
+    function withdraw() public {
+        //Starting index; Ending index; Step amount
+        for(uint256 funderIndex=0; funderIndex < funders.length; funderIndex++) {
+            address funder = funders[funderIndex];
+            addressToAmoundFunded[funder] = 0;
+        }
     }
-
-    //it will convert eth value into USD
-    function getConversionRate(uint256 ethAmount) public view returns(uint256) {
-        uint256 ethPrice = getPrice();
-        uint256 ethAmountInUsd = (ethPrice*ethAmount)/1e18; //our ETH value in USD
-        // 3000.000000000000000000 = ETH / USD
-        // 1.000000000000000000 ETH 
-        // returns -> 3000.000000000000000000 ~ 3000
-        return ethAmountInUsd;
-    }
-
-    //function withdraw() {}
 }
