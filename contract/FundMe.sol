@@ -9,7 +9,7 @@ contract FundMe {
 
     using PriceConverter for uint256;
 
-    uint256 public minUSD = 50*10**18;
+    uint256 public minUSD = 0.005*10**18;
 
     address[] public funders;
     mapping(address => uint256) public addressToAmoundFunded;
