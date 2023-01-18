@@ -5,19 +5,22 @@ pragma solidity ^0.8.10;
 
 import "./PriceConverter.sol";
 
+//777,933  754,517
 contract FundMe {
 
     using PriceConverter for uint256;
 
-    uint256 public minUSD = 0.005*10**18;
+    uint256 public constant MIN_USD = 0.005*10**18; 
+    //constant - 21,371
+    //non-constant - 23,471
 
     address[] public funders;
     mapping(address => uint256) public addressToAmoundFunded;
 
-    address public owner;
+    address public immutable i_owner;
 
     constructor() {
-        owner = msg.sender;
+        i_owner = msg.sender;
     }
 
     //using this we will get funds from other users.
@@ -27,7 +30,7 @@ contract FundMe {
             //Reverting - Undo any action before and send remaining gas back
 
         // require(getConversionRate(msg.value) >= minUSD, "send 1 ETH Minimum");
-        require(msg.value.getConversionRate() >= minUSD, "Not enough ETH");
+        require(msg.value.getConversionRate() >= MIN_USD, "Not enough ETH");
         funders.push(msg.sender);
         addressToAmoundFunded[msg.sender] = msg.value;
     }
@@ -58,7 +61,7 @@ contract FundMe {
 
     modifier onlyOwner {
         //checking the owner
-        require(msg.sender == owner, "Sender is not owner");
+        require(msg.sender == i_owner, "Sender is not owner");
         _; // _ means execute the code of the function
     }
 }
