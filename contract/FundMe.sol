@@ -9,10 +9,16 @@ contract FundMe {
 
     using PriceConverter for uint256;
 
-    uint256 public minUSD = 50*1e18;
+    uint256 public minUSD = 50*10**18;
 
     address[] public funders;
     mapping(address => uint256) public addressToAmoundFunded;
+
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
+    }
 
     //using this we will get funds from other users.
     function fund() public payable {
@@ -21,16 +27,38 @@ contract FundMe {
             //Reverting - Undo any action before and send remaining gas back
 
         // require(getConversionRate(msg.value) >= minUSD, "send 1 ETH Minimum");
-        require(msg.value.getConversionRate() >= minUSD, "send 1 ETH Minimum");
+        require(msg.value.getConversionRate() >= minUSD, "Not enough ETH");
         funders.push(msg.sender);
         addressToAmoundFunded[msg.sender] = msg.value;
     }
 
-    function withdraw() public {
+    function withdraw() public onlyOwner {
+        //looping through the array
         //Starting index; Ending index; Step amount
-        for(uint256 funderIndex=0; funderIndex < funders.length; funderIndex++) {
+        for(uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
             address funder = funders[funderIndex];
             addressToAmoundFunded[funder] = 0;
         }
+
+        //resetting the array
+        funders = new address[](0);
+
+        //withdrawing funds
+        //way-1 : transfer
+        // payable(msg.sender).transfer(address(this).balance);
+
+        //way-2 : send
+        // bool sendSuccess = payable(msg.sender).send(address(this).balance);
+        // require(sendSuccess, "Send Failed");
+
+        //way-3 : call
+        (bool callSuccess, ) = payable(msg.sender).call{value : address(this).balance}("");
+        require(callSuccess, "Call Failed");
+    }
+
+    modifier onlyOwner {
+        //checking the owner
+        require(msg.sender == owner, "Sender is not owner");
+        _; // _ means execute the code of the function
     }
 }
