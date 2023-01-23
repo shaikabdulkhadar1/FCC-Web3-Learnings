@@ -5,6 +5,8 @@ pragma solidity ^0.8.10;
 
 import "./PriceConverter.sol";
 
+// error NotOwner();
+
 //777,933  754,517
 contract FundMe {
 
@@ -62,6 +64,16 @@ contract FundMe {
     modifier onlyOwner {
         //checking the owner
         require(msg.sender == i_owner, "Sender is not owner");
+        // if(msg.sender != i_owner) { revert NotOwner(); } //Gas efficient way
         _; // _ means execute the code of the function
+    }
+
+    //What happens when people send ETH without calling Fund function
+    receive() external payable {
+        fund();
+    }
+
+    fallback() external payable {
+        fund();
     }
 }
